@@ -47,7 +47,7 @@ def extract(msgfilename):
             msg.phone = 1111111111
           elif len(line) == 18 and line[0:7] == 'TEL:+91':
             msg.phone = int(line[7:17])
-          elif len(line) == 15 and line[0:4] == 'TEL:':
+          elif len(line) == 15 and line[0:4] == 'TEL:' and line[4:14].isdigit():
             msg.phone = int(line[4:14])
           elif len(line) < 15 and line[0:4] == 'TEL:':
             if(line[4:len(line)-1].isdigit()):
@@ -88,14 +88,19 @@ def exist(filename):
 # Add the name and number to cont if not present. The contact name is taken
 # from the .vmg file, and the phone number is taken from the msgobj object
 def addtocont(msgfilename, msgobj):
-	if msgfilename[0].isdigit():
-		if not msgobj.phone in cont:
-			cont[msgobj.phone] = ''
-	elif msgfilename[0] == '+':
-		if not msgobj.phone in cont:
-			cont[msgobj.phone] = ''
-	elif msgfilename[0].isalpha():
-		cont[msgobj.phone] = msgfilename.split('_')[0]
+  if msgfilename.find('_') != -1 or msgfilename.find('-') != -1:
+    """ This will ensure that the .vmg files which are copied from a backup file
+    (using say nbuexplorer), which do not contain a contact 'name', are also
+    readable through this program"""
+    if msgfilename[0].isdigit():
+      if not msgobj.phone in cont:
+        cont[msgobj.phone] = ''
+    elif msgfilename[0] == '+':
+      if not msgobj.phone in cont:
+        cont[msgobj.phone] = ''
+    elif msgfilename[0].isalpha():
+      cont[msgobj.phone] = msgfilename.split('_')[0]
+  else: cont[msgobj.phone] = ''
 
 # Returns <phone number>_<year> of the msg object. This will be the file name
 # of the metafile of the contact
@@ -150,7 +155,9 @@ def dumptofile(dic, filename):
   sortorder = sorted(dic)
   f = open(filename, 'w')
   fileparts = re.compile(r'[/_.]').split(filename)
+  print cont
   print 'll::'
+  print fileparts
   if fileparts[1].isdigit():
     f.write('<!--' + cont[int(fileparts[1])] + '|' + fileparts[1] + '|' + filename.split('_')[1] + '|' + str(len(sortorder)) + '|v1' + '-->\n')
   else:
@@ -264,6 +271,8 @@ while nextindex < len(ls):
 	if len(donemsgs) > 0:
 		for i in donemsgs:
 			currdict[i.date] = i
+	print "next index metafile:"
+	print metafilename(ls[nextindex])
 	dumptofile(currdict, metafilename(ls[nextindex]))
 	nextindex = nextindex + 1
 
