@@ -113,18 +113,13 @@ def metafilename(msg):
 def load(filename):
   msglist = []
   if exist(filename):
-    print filename
     fileparts = re.compile(r'[/_.]').split(filename)
     if fileparts[1].isdigit():
       ph = int(fileparts[1])
     else: ph = fileparts[1]
     f = open(filename, 'r')
     l = f.readline()
-    print 'readline:'
-    print l
     l = l[4:len(l)-4].split('|')
-    print 'oo'
-    print l
     msgnum = int(l[3])
     for i in range(0,102):
       l = f.readline()
@@ -155,9 +150,6 @@ def dumptofile(dic, filename):
   sortorder = sorted(dic)
   f = open(filename, 'w')
   fileparts = re.compile(r'[/_.]').split(filename)
-  print cont
-  print 'll::'
-  print fileparts
   if fileparts[1].isdigit():
     f.write('<!--' + cont[int(fileparts[1])] + '|' + fileparts[1] + '|' + filename.split('_')[1] + '|' + str(len(sortorder)) + '|v1' + '-->\n')
   else:
@@ -271,8 +263,8 @@ while nextindex < len(ls):
 	if len(donemsgs) > 0:
 		for i in donemsgs:
 			currdict[i.date] = i
-	print "next index metafile:"
-	print metafilename(ls[nextindex])
+#	print "next index metafile:"
+#	print metafilename(ls[nextindex])
 	dumptofile(currdict, metafilename(ls[nextindex]))
 	nextindex = nextindex + 1
 
