@@ -6,7 +6,7 @@ Manager for mobile messages in computer. Takes .vmg messages as input and conver
 Details
 -------
 Currently supports only text messages stored as `.vmg` files. These messages can be exported from phone using Nokia PC Suite, or can be extracted from backup using NBUexplorer application (an open source application hosted on SourceForge). 
-Example output conversation file can be found [here](http://dl.dropbox.com/u/42084476/Extra/9987114106_2012.html).
+Example output conversation file can be found <a href="http://dl.dropbox.com/u/42084476/Extra/9987114106_2012.html" target="_blank">here</a>.
 
 Requirements
 ------------
