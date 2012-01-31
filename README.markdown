@@ -17,7 +17,7 @@ How to use
 
     ./src/smsInit.py
 
-This will create `to_process`, `processed`, `meta`, `conversations` and `unprocessed` directories. You need to put all your .vmg files in `to_process` folder which will be moved to `processed` folder after processing. All the output conversation html files will go into `conversations` folder. Then execute:
+This will create `to_process`, `processed`, `meta`, `conversations` and `unprocessed` directories. You need to put all your .vmg files in `to_process` folder. All the processed vmg files will be moved to `processed` folder after processing. All the output conversation html files will go into `conversations` folder. Then execute:
 
     ./src/sms.py
 
@@ -25,7 +25,7 @@ And you are done! Check `conversations` folder to see the conversation files.
 
 Contributing
 ------------
-Want to contribute? Great! Get going! Contact me at `rushi [dot] agr [at] gmail [dot] com`. Here is the list of things I want to develop:
+Want to contribute? Great! Get going! Contact me at `rushi[dot]agr[at]gmail[dot]com`. Here is the list of things I want to develop:
 
 Issues and Future Development
 -----------------------------
@@ -36,4 +36,4 @@ In the increasing order of labour:
 3. Cross-platform application (specifically Windows)
 4. Develop a cool GUI for the application (preferably in GTK)
 5. Develop message viewing/scrolling/finding/selectively saving abilities in the GUI.
-5. Develop python independent binary executables (using something like PyGtk or PyInstaller.
+6. Develop python independent binary executables (using something like PyGtk or PyInstaller.)
