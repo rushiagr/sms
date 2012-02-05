@@ -16,9 +16,41 @@ class Msg:
 	def show(self):
 		print self.type, self.date, self.phone, self.content
 
+# Extracts all the messages from the csv file
+def extract_csv(msgfilename):
+    msgfilename = 'to_process/' + msgfilename[0:len(msgfilename)-1]
+    f = open(msgfilename,'r')
+    mlist = []
+    for line in f:
+        msg = Msg()
+#        print line
+        if line == 'sms,"","","","","",""\n' or line == 'sms,"","","","","",""':
+            break
+        if line[4] == 'd':
+            msg.type = 'i'
+            line = line.split('","","","')
+            msg.date = int(line[1][0:4]+line[1][5:7]+line[1][8:10]+line[1][11:13]+line[1][14:16]+'00')
+            msg.content = line[1][22:len(line[1])-2]
+            msg.phone = line[0].split(',"')[1]
+        elif line[4] == 's':
+            msg.type = 's'
+            line = line[15:len(line)]
+            line = line.split('","","')
+            msg.phone = line[0]
+            msg.date = int(line[1][0:4]+line[1][5:7]+line[1][8:10]+line[1][11:13]+line[1][14:16]+'00')
+#            print msg.date
+            msg.content = line[2][0:len(line[2])-2]
+        if msg.phone.isdigit():
+            msg.phone = int(msg.phone)
+        elif msg.phone[0:3] == '+91':
+            msg.phone = int(msg.phone[3:len(msg.phone)])
+        mlist.append(msg)
+#    print mlist
+    return mlist
+
 # Returns Msg object which contains all the information of message file given
 # as input parameter
-def extract(msgfilename):
+def extract_vmg(msgfilename):
   msgfilename = 'to_process/' + msgfilename[0:len(msgfilename)-1]
   f = open(msgfilename, 'r')
   msg = Msg()
@@ -81,7 +113,7 @@ def extract(msgfilename):
 # file exists
 def exist(filename):
 	if(len(commands.getoutput('if [ -e '+filename+' ];then echo "YES";fi')) > 0):
-		return True
+		return False
 	else:
 		return False
 
@@ -113,6 +145,7 @@ def metafilename(msg):
 def load(filename):
   msglist = []
   if exist(filename):
+#    print '"', filename, '" exists!'
     fileparts = re.compile(r'[/_.]').split(filename)
     if fileparts[1].isdigit():
       ph = int(fileparts[1])
@@ -137,6 +170,7 @@ def load(filename):
         msg.type = 'i'
       else: msg.type = 's'
       l = re.compile(r'[- :]').split(l)
+#      print l
       msg.date = int(l[2]+l[1]+l[0]+l[3]+l[4]+l[5])
       msglist.append(msg)
       l = f.readline()
@@ -202,6 +236,7 @@ def formattedmsg(msg):
   elif msg.type == 's':
     string += '</div><div style="clear:both;"></div><div class="infoRight">\n'
   string += str(msg.date)[6:8] + '-' + str(msg.date)[4:6] + '-' + str(msg.date)[0:4] + ' ' + str(msg.date)[8:10] + ':' + str(msg.date)[10:12] + ':' + str(msg.date)[12:14]
+ # print msg.date, 'ooh!!'
   if msg.type == 'i':
     string += '\n</div>\n\n'
   elif msg.type == 's':
@@ -231,14 +266,24 @@ f.close()
 # Getting all the information from the message files into list ls
 f = open('meta/msgfiles', 'r')
 for line in f:
-	if line.endswith('.vmg\n'):
-	  msgobj = extract(line)
-	  if msgobj.type != 'x':
-  		ls.append(extract(line))
-  		if ls[len(ls)-1].phone == -1:
-	  		del ls[len(ls)-1]
-	  	else:
-	  		addtocont(line, ls[len(ls)-1])
+    if line.endswith('.vmg\n'):
+        msgobj = extract_vmg(line)
+        if msgobj.type != 'x':
+            ls.append(extract_vmg(line))
+            if ls[len(ls)-1].phone == -1:
+                del ls[len(ls)-1]
+            else:
+                addtocont(line, ls[len(ls)-1])
+    if line.endswith('.csv\n'):
+#        print 'peep'
+        csv_list = extract_csv(line)
+ #       print csv_list
+        for i in csv_list:
+            if not cont.has_key(i.phone):
+                cont[i.phone]=''
+        ls.extend(csv_list)
+
+
 print 'info of ', len(ls), ' files into memory now'
 f.close()
 
