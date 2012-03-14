@@ -1,4 +1,4 @@
-SMS (Sms Management Suite)
+SMS (Sms Management Suite )
 ==========================
 
 Manager for mobile messages in computer. Takes .vmg messages as input and converts them to single-file nice-looking conversation per contact. Output file format is html, so can be viewed across all operating systems and browsers (including mobile!).
