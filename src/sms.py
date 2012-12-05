@@ -4,17 +4,17 @@ import commands
 from operator import attrgetter
 import re
 
-cont = {}		# Dictionary to hold all the contacts as (number, name) pair
-ls = []			# List to hold the Msg objects. It will contain msg objects of
-				# all the message files to be processed
-currdict = {}	# Will hold all the msg objects as (date, msg) pair which are to
-				# be written in one single metadata file
+cont = {}       # Dictionary to hold all the contacts as (number, name) pair
+ls = []         # List to hold the Msg objects. It will contain msg objects of
+                # all the message files to be processed
+currdict = {}   # Will hold all the msg objects as (date, msg) pair which are to
+                # be written in one single metadata file
 
 
 # Class for holding a message
 class Msg:
-	def show(self):
-		print self.type, self.date, self.phone, self.content
+    def show(self):
+        print self.type, self.date, self.phone, self.content
 
 # Extracts all the messages from the csv file
 def extract_csv(msgfilename):
@@ -112,10 +112,10 @@ def extract_vmg(msgfilename):
 # Checks if the specified file/directory exists or not. Returns true if the
 # file exists
 def exist(filename):
-	if(len(commands.getoutput('if [ -e '+filename+' ];then echo "YES";fi')) > 0):
-		return False
-	else:
-		return False
+    if(len(commands.getoutput('if [ -e '+filename+' ];then echo "YES";fi')) > 0):
+        return False
+    else:
+        return False
 
 # Add the name and number to cont if not present. The contact name is taken
 # from the .vmg file, and the phone number is taken from the msgobj object
@@ -137,7 +137,7 @@ def addtocont(msgfilename, msgobj):
 # Returns <phone number>_<year> of the msg object. This will be the file name
 # of the metafile of the contact
 def metafilename(msg):
-	return 'conversations/' + str(msg.phone) + '_' + str(msg.date)[0:4] + '.html'
+    return 'conversations/' + str(msg.phone) + '_' + str(msg.date)[0:4] + '.html'
 
 
 # Returns list of msg objects. Loads all the messages from the specified
@@ -246,7 +246,7 @@ def formattedmsg(msg):
 
 commands.getoutput('ls -1 to_process > meta/msgfiles')
 if not exist('meta/contacts'):
-	commands.getoutput('echo "" > meta/contacts')
+    commands.getoutput('echo "" > meta/contacts')
 
 # Loading all contacts in memory (in cont)
 f = open('meta/contacts', 'r')
@@ -254,7 +254,7 @@ for line in f:
   contactparts = line.split('|')
   if line != '\n':
     if contactparts[0].isdigit():
-  	  cont[int(line.split('|')[0])] = line.split('|')[1][0:len(line.split('|')[1])-1]
+      cont[int(line.split('|')[0])] = line.split('|')[1][0:len(line.split('|')[1])-1]
     else: cont[line.split('|')[0]] = line.split('|')[1][0:len(line.split('|')[1])-1]
 f.close()
 
@@ -293,30 +293,30 @@ ls =  sorted(ls, key=attrgetter('phone', 'date'))
 # For each contact, all the messages in the same year (from both, .vmg message
 # files and the metafile of the same contact) are loaded in a separate
 # dictionary currdict, and then put back again in the metafile
-nextindex = 0	# Index upto which the ls list is searched
+nextindex = 0   # Index upto which the ls list is searched
 while nextindex < len(ls):
-	currdict = {}
-	currdict[ls[nextindex].date] = ls[nextindex]
-	if nextindex < len(ls)-2:
-		while metafilename(ls[nextindex]) == metafilename(ls[nextindex+1]):
-			nextindex = nextindex + 1
-			if nextindex >= len(ls)-1:
-				break
-			currdict[ls[nextindex].date] = ls[nextindex]
-		currdict[ls[nextindex].date] = ls[nextindex]
-	donemsgs = load(metafilename(ls[nextindex]))
-	if len(donemsgs) > 0:
-		for i in donemsgs:
-			currdict[i.date] = i
-#	print "next index metafile:"
-#	print metafilename(ls[nextindex])
-	dumptofile(currdict, metafilename(ls[nextindex]))
-	nextindex = nextindex + 1
+    currdict = {}
+    currdict[ls[nextindex].date] = ls[nextindex]
+    if nextindex < len(ls)-2:
+        while metafilename(ls[nextindex]) == metafilename(ls[nextindex+1]):
+            nextindex = nextindex + 1
+            if nextindex >= len(ls)-1:
+                break
+            currdict[ls[nextindex].date] = ls[nextindex]
+        currdict[ls[nextindex].date] = ls[nextindex]
+    donemsgs = load(metafilename(ls[nextindex]))
+    if len(donemsgs) > 0:
+        for i in donemsgs:
+            currdict[i.date] = i
+#   print "next index metafile:"
+#   print metafilename(ls[nextindex])
+    dumptofile(currdict, metafilename(ls[nextindex]))
+    nextindex = nextindex + 1
 
 # Writing back all contacts to contacts file
 towrite = ''
 for i in cont:
-	towrite = towrite + str(i) + '|' + str(cont[i]) + '\n'
+    towrite = towrite + str(i) + '|' + str(cont[i]) + '\n'
 f = open('meta/contacts', 'w')
 f.write(towrite)
 
