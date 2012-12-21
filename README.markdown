@@ -1,6 +1,8 @@
 SMS (Sms Management Suite )
 ==========================
 
+NOTE: The work on this project has been halted, as this project is way down in the priority list of the principal developer. If you want to continue development, a template of how you can develop it according to the developer's plan can be found [here](https://github.com/rushiagr/sms/blob/complete_makeover/src/sms.py).
+
 Manager for mobile messages in computer. Takes .vmg messages as input and converts them to single-file nice-looking conversation per contact. Output file format is html, so can be viewed across all operating systems and browsers (including mobile!).
 
 Details

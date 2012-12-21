@@ -9,3 +9,4 @@ my_msg_archive.tar.gz
 my_msg_archive/
 my_msg_archive/*
 meta/*
+*.pyc
