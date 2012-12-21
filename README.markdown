@@ -12,8 +12,7 @@ Example output conversation file can be found <a href="http://dl.dropbox.com/u/4
 
 Requirements
 ------------
-1. A Linux machine
-2. Python installed (I think any 2.0+ version will do the job)
+1. A Linux machine with Python installed on it (2.4+)
 
 How to use
 ----------
@@ -28,12 +27,14 @@ And you are done! Check `conversations` folder to see the conversation files.
 
 Contributing
 ------------
-Want to contribute? Great! Contact me at `rushi[dot]agr[at]gmail[dot]com`. Here is the list of things I want to develop:
+Want to contribute? Great! Contact me at `rushi.agr@gmail.com`. Here is the list of things I want to develop:
 
 Issues and Future Development
 -----------------------------
 
-In the increasing order of time required:
+Current development is halted, as my old Laptops's harddisk crashed, and I changed my phone to Android :)
+
+Future development in the increasing order of time required:
 
 1. Using shadows in the output html file. Enhancing the colour scheme.
 2. Support for Samsung, LG, Android, etc messages
