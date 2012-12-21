@@ -1,5 +1,42 @@
 #! /usr/bin/env python
 
+"""
+class Msg
+
+class MsgBlob
+    contains all the smses in a format described in organize_all_sms
+
+def extract_csv(csvfile)
+
+def extract_vmg(vmgfile)
+
+def organize_all_sms(list of contacts)
+    make a dict with phone number as key and set of all the smses as the value
+    
+def extract_phone_number(msg)
+    extracts phone number out of Msg object. Strips off +91 if it exist. 
+    Other customizations, for example, removing smses starting from AZ, etc 
+    can be done
+    will return a msg blob object
+    
+def dump_to_disk(msgblob)
+    dumps all sms to disk
+    
+def create_conversation_all(msgblob)
+    creates conversation files for all contacts in msgblob
+
+def create_conversation(contact_number)
+    creates conversation file for only specified contact in msgblob
+    
+wrapper def make conversation_msg(msg)
+    takes a Msg object, and creates a conversation chatbox in html out of it
+    
+wrapper def conversation_template(conversation_string)
+    takes a list of wrapped smses, and returns a full renderable html object
+
+
+"""
+
 import commands
 from operator import attrgetter
 import re
@@ -11,107 +48,152 @@ currdict = {}   # Will hold all the msg objects as (date, msg) pair which are to
                 # be written in one single metadata file
 
 
-# Class for holding a message
 class Msg:
+    """Class for holding a message"""
+    def __init__(self, msgtype, msgdate, msgphone, msgcontent):
+        self.type = msgtype
+        self.date = msgdate     #NOTE: is an int of format YYYYMMDDHHmmss
+        self.phone = msgphone   #NOTE: is a string, not int
+        self.content = msgcontent
+    
     def show(self):
-        print self.type, self.date, self.phone, self.content
+        print 'self.type: ', self.type, self.date, self.phone, self.content
+        print 'self.date: ', self.date
+        print 'self.phone: ', self.phone
+        print 'self.content: ', self.content
 
-# Extracts all the messages from the csv file
-def extract_csv(msgfilename):
-    msgfilename = 'to_process/' + msgfilename[0:len(msgfilename)-1]
-    f = open(msgfilename,'r')
-    mlist = []
-    for line in f:
-        msg = Msg()
-#        print line
+class MsgBlob(object):
+    """
+    This class holds all the SMS messages as a dictionary. Example:
+        self.msgs = {
+                        '9945184519': {
+                                        '20111231235958': Msg(),
+                                        '20111231235959': Msg(),
+                                      },
+                        '9822342726': ...
+                    }
+    """
+   
+    def __init__(self, msglist):
+        self.msgs = dict()
+        
+        for sms in msglist:
+            consume(sms)
+#            number = extract_phone_number(sms)
+    
+    def consume(sms):
+        """Takes the Msg object, and inserts into msgs dict"""
+        number = extract_phone_number(sms)
+        if number not in self.msgs:
+            self.msgs[number] = []
+        self.msgs[number].append(sms)
+
+
+def extract_csv(self, csvfile):
+    """
+    Extracts all the messages from csv file exported from Nokia PC Suite.
+    
+    Returns list of Msg objects extracted from the given csv file.
+    """
+    csv = open(csvfile, 'r')
+    sms_list = []
+
+    for line in csv:
         if line == 'sms,"","","","","",""\n' or line == 'sms,"","","","","",""':
             break
         if line[4] == 'd':
-            msg.type = 'i'
+            msgtype = 'inbox'
             line = line.split('","","","')
-            msg.date = int(line[1][0:4]+line[1][5:7]+line[1][8:10]+line[1][11:13]+line[1][14:16]+'00')
-            msg.content = line[1][22:len(line[1])-2]
-            msg.phone = line[0].split(',"')[1]
+            msgdate = int(line[1][0:4] + \
+                        line[1][5:7] + \
+                        line[1][8:10] + \
+                        line[1][11:13] + \
+                        line[1][14:16] + '00')
+            msgcontent = line[1][22:len(line[1])-2]
+            msgphone = line[0].split(',"')[1]
         elif line[4] == 's':
-            msg.type = 's'
+            msgtype = 'sent'
             line = line[15:len(line)]
             line = line.split('","","')
-            msg.phone = line[0]
-            msg.date = int(line[1][0:4]+line[1][5:7]+line[1][8:10]+line[1][11:13]+line[1][14:16]+'00')
-#            print msg.date
-            msg.content = line[2][0:len(line[2])-2]
-        if msg.phone.isdigit():
-            msg.phone = int(msg.phone)
-        elif msg.phone[0:3] == '+91':
-            msg.phone = int(msg.phone[3:len(msg.phone)])
-        mlist.append(msg)
-#    print mlist
+            msgphone = line[0]
+            msgdate = int(line[1][0:4]+line[1][5:7]+line[1][8:10]+line[1][11:13]+line[1][14:16]+'00')
+            msgcontent = line[2][0:len(line[2])-2]
+        #if msgphone.isdigit():
+        #    msgphone = int(msgphone)
+        #TODO remove this India-specific info, and handle for general case
+        #elif msgphone[0:3] == '+91':
+        #    msgphone = int(msgphone[3:len(msgphone)])
+        message = Msg(msgtype, msgdate, msgphone, msgcontent)
+        sms_list.append(message)
+
     return mlist
 
-# Returns Msg object which contains all the information of message file given
-# as input parameter
-def extract_vmg(msgfilename):
-  msgfilename = 'to_process/' + msgfilename[0:len(msgfilename)-1]
-  f = open(msgfilename, 'r')
-  msg = Msg()
-  msg.content = ''
-  msg.phone = -1
-  count = 0;
-  for line in f:
-    line = "".join(str(n) for n in line[1::2])
-    count = count + 1
-    if count == 5:
-      templist = line.strip("X-NOK-DT:").strip('Z\n').rsplit('T')
-      msg.date = int(templist[0] + templist[1])
-    if count == 6:
-      if line.endswith('DELIVER\n'):
-        msg.type = 'i'          # i for inbox
-      elif line.endswith('SUBMIT\n'):
-        msg.type = 's'          # s for sent
-      elif line.endswith(':\n'):
-        msg.type = 'x'          # unknown type, used for error checking
-      else:
-        print 'error in submit/sent\n'
-    if count > 6:
-      if msg.type == 'i':
-        if count == 10:
-          if line == 'TEL:\n':
-            msg.phone = 1111111111
-          elif len(line) == 18 and line[0:7] == 'TEL:+91':
-            msg.phone = int(line[7:17])
-          elif len(line) == 15 and line[0:4] == 'TEL:' and line[4:14].isdigit():
-            msg.phone = int(line[4:14])
-          elif len(line) < 15 and line[0:4] == 'TEL:':
-            if(line[4:len(line)-1].isdigit()):
-              msg.phone = int(line[4:len(line)-1])
-            else:
-              msg.phone = line[4:len(line)-1]
-        if count >= 15 and line != 'END:VBODY\n':
-          msg.content = msg.content + line
-        elif line == 'END:VBODY\n':
-          break
-      if msg.type == 's':
-        if count == 16:
-          if line == 'TEL:\n':
-            msg.phone = 'DRAFT'
-          elif len(line) == 18 and line[0:7] == 'TEL:+91':
-            msg.phone = int(line[7:17])
-          elif len(line) == 15 and line[0:4] == 'TEL:':
-            msg.phone = int(line[4:14])
-          elif len(line) < 15 and line[0:4] == 'TEL:':
-            if(line[4:len(line)-1].isdigit()):
-              msg.phone = int(line[4:len(line)-1])
-            else: msg.phone = line[4:len(line)-1]
-        if count >= 21 and line != 'END:VBODY\n':
-          msg.content = msg.content + line
-        elif line == 'END:VBODY\n':
-          break
-  f.close()
-  return msg
+def extract_vmg(vmgfile):
+    """ Extracts a Nokia VMG message file and returns the extracted SMS """
+    vmg = open(vmgfile, 'r')
 
-# Checks if the specified file/directory exists or not. Returns true if the
-# file exists
+    msgcontent = ''
+    # Only saving SMS which contain a phone number. Else it is a draft SMS.
+    msgphone = -1
+    count = 0;
+    for line in vmg:
+        line = "".join(str(n) for n in line[1::2])  # Handling windows encoding
+        count += 1
+        if count == 5:
+            templist = line.strip("X-NOK-DT:").strip('Z\n').rsplit('T')
+            msgdate = int(templist[0] + templist[1])
+        if count == 6:
+            if line.endswith('DELIVER\n'):
+                msgtype = 'inbox'
+            elif line.endswith('SUBMIT\n'):
+                msgtype = 'sent'
+            elif line.endswith(':\n'):
+                msgtype = 'unknown'
+            else:
+                print 'error in submit/sent\n'
+        if count > 6:
+            if msgtype == 'inbox':
+                if count == 10:
+                    if line == 'TEL:\n':
+                        msgphone = '1111111111'     #dummy value
+                    elif len(line) == 18 and line[0:7] == 'TEL:+91':
+                        msgphone = line[4:17]
+                    elif len(line) == 15 and \
+                            line[0:4] == 'TEL:' and \
+                            line[4:14].isdigit():
+                        msgphone = line[4:14]
+                    elif len(line) < 15 and line[0:4] == 'TEL:':
+                        if(line[4:len(line)-1].isdigit()):
+                            msgphone = int(line[4:len(line)-1])
+                        else:
+                            msgphone = line[4:len(line)-1]
+                if count >= 15 and line != 'END:VBODY\n':
+                    msgcontent = msgcontent + line
+                elif line == 'END:VBODY\n':
+                    break
+            if msgtype == 'sent':
+                if count == 16:
+                    if line == 'TEL:\n':
+                        msgphone = 'DRAFT'
+                    elif len(line) == 18 and line[0:7] == 'TEL:+91':
+                        msgphone = int(line[7:17])
+                    elif len(line) == 15 and line[0:4] == 'TEL:':
+                        msgphone = int(line[4:14])
+                    elif len(line) < 15 and line[0:4] == 'TEL:':
+                        if(line[4:len(line)-1].isdigit()):
+                            msgphone = int(line[4:len(line)-1])
+                        else: msgphone = line[4:len(line)-1]
+                if count >= 21 and line != 'END:VBODY\n':
+                    msgcontent = msgcontent + line
+                elif line == 'END:VBODY\n':
+                    break
+  
+    vmg.close()
+    return Msg(msgtype, msgdate, msgphone, msgcontent)
+
+
 def exist(filename):
+    """Checks if the specified file/diectory exist or not. Deprecated."""
     if(len(commands.getoutput('if [ -e '+filename+' ];then echo "YES";fi')) > 0):
         return False
     else:
@@ -143,105 +225,105 @@ def metafilename(msg):
 # Returns list of msg objects. Loads all the messages from the specified
 # conversation file into the memory.
 def load(filename):
-  msglist = []
-  if exist(filename):
-#    print '"', filename, '" exists!'
-    fileparts = re.compile(r'[/_.]').split(filename)
-    if fileparts[1].isdigit():
-      ph = int(fileparts[1])
-    else: ph = fileparts[1]
-    f = open(filename, 'r')
-    l = f.readline()
-    l = l[4:len(l)-4].split('|')
-    msgnum = int(l[3])
-    for i in range(0,102):
-      l = f.readline()
-    l = f.readline()
-    for i in range(0,msgnum):
-      msg = Msg()
-      msg.phone = ph
-      msg.content = ''
-      l = f.readline()
-      while l[0:6] != '</div>':
-        msg.content += l[0:len(l)-5] + '\n'
+    msglist = []
+    if exist(filename):
+        fileparts = re.compile(r'[/_.]').split(filename)
+        if fileparts[1].isdigit():
+            ph = int(fileparts[1])
+        else: 
+            ph = fileparts[1]
+        f = open(filename, 'r')
         l = f.readline()
-      l = f.readline()
-      if len(l) <= 20:
-        msg.type = 'i'
-      else: msg.type = 's'
-      l = re.compile(r'[- :]').split(l)
-#      print l
-      msg.date = int(l[2]+l[1]+l[0]+l[3]+l[4]+l[5])
-      msglist.append(msg)
-      l = f.readline()
-      l = f.readline()
-      l = f.readline()
-  return msglist
+        l = l[4:len(l)-4].split('|')
+        msgnum = int(l[3])
+        for i in range(0,102):
+            l = f.readline()
+        l = f.readline()
+        for i in range(0,msgnum):
+            msg = Msg()
+            msg.phone = ph
+            msg.content = ''
+            l = f.readline()
+            while l[0:6] != '</div>':
+                msg.content += l[0:len(l)-5] + '\n'
+                l = f.readline()
+            l = f.readline()
+            if len(l) <= 20:
+                msg.type = 'i'
+            else: 
+                msg.type = 's'
+            l = re.compile(r'[- :]').split(l)
+            msg.date = int(l[2]+l[1]+l[0]+l[3]+l[4]+l[5])
+            msglist.append(msg)
+            l = f.readline()
+            l = f.readline()
+            l = f.readline()
+    return msglist
 
 
 # Dumps all the information in the dictionary to the given filename.
 def dumptofile(dic, filename):
-  sortorder = sorted(dic)
-  f = open(filename, 'w')
-  fileparts = re.compile(r'[/_.]').split(filename)
-  if fileparts[1].isdigit():
-    f.write('<!--' + cont[int(fileparts[1])] + '|' + fileparts[1] + '|' + filename.split('_')[1] + '|' + str(len(sortorder)) + '|v1' + '-->\n')
-  else:
-    f.write('<!--|' + fileparts[1] + '|' + filename.split('_')[1] + '|' + str(len(sortorder)) + '|v1' + '-->\n')
-  f.close()
-  fhtmlstart = open('src/start_code', 'r')
-  f = open(filename, 'a')
-  l = fhtmlstart.readlines()
-  l = ''.join(l)
-  f.write(l)
-  fhtmlstart.close()
-  f.write('<div class="heading">\n')
-  if fileparts[1].isdigit():
-    f.write(cont[int(fileparts[1])] + '\n')
-  else:
-    f.write('\n')
-  f.write('</div>\n')
-  f.write('<div class="number">\n')
-  f.write(fileparts[1] + '\n')
-  f.write('</div>\n')
-  f.write('<div class="subHeading">\n')
-  f.write(str(len(sortorder)) + '\n')
-  f.write('messages, year\n')
-  f.write(fileparts[2] + '\n')
-  f.write('<br><br></div>\n')
-  for i in sortorder:
-    f.write(formattedmsg(dic[i]))
-  f.write('<div class="copyright" >&#169\n') 
-  f.write('<a href="mailto:rushi.agr@gmail.com">Rushi Agrawal</a></div>\n')
-  f.write('</div>\n')
-  f.write('</body>\n')
-  f.write('</html>\n')
-  f.close()
-  if fileparts[1].isdigit():
-    print 'Writing of ' + fileparts[1] + '-' + cont[int(fileparts[1])] + ' done'
+    sortorder = sorted(dic)
+    f = open(filename, 'w')
+    fileparts = re.compile(r'[/_.]').split(filename)
+    if fileparts[1].isdigit():
+        f.write('<!--' + cont[int(fileparts[1])] + '|' + fileparts[1] + '|' + filename.split('_')[1] + '|' + str(len(sortorder)) + '|v1' + '-->\n')
+    else:
+        f.write('<!--|' + fileparts[1] + '|' + filename.split('_')[1] + '|' + str(len(sortorder)) + '|v1' + '-->\n')
+    f.close()
+    fhtmlstart = open('src/start_code', 'r')
+    f = open(filename, 'a')
+    l = fhtmlstart.readlines()
+    l = ''.join(l)
+    f.write(l)
+    fhtmlstart.close()
+    f.write('<div class="heading">\n')
+    if fileparts[1].isdigit():
+        f.write(cont[int(fileparts[1])] + '\n')
+    else:
+        f.write('\n')
+    f.write('</div>\n')
+    f.write('<div class="number">\n')
+    f.write(fileparts[1] + '\n')
+    f.write('</div>\n')
+    f.write('<div class="subHeading">\n')
+    f.write(str(len(sortorder)) + '\n')
+    f.write('messages, year\n')
+    f.write(fileparts[2] + '\n')
+    f.write('<br><br></div>\n')
+    for i in sortorder:
+        f.write(formattedmsg(dic[i]))
+    f.write('<div class="copyright" >&#169\n') 
+    f.write('<a href="mailto:rushi.agr@gmail.com">Rushi Agrawal</a></div>\n')
+    f.write('</div>\n')
+    f.write('</body>\n')
+    f.write('</html>\n')
+    f.close()
+    if fileparts[1].isdigit():
+        print 'Writing of ' + fileparts[1] + '-' + cont[int(fileparts[1])] + ' done'
 
 # Returns string, the format in which the message is to be written
 # to message data file
 def formattedmsg(msg):
-  string = ''
-  if msg.type == 'i':
-    string = '<div class="divContainerDownLeft">\n'
-  elif msg.type == 's':
-    string = '<div class="divContainerDownRight">\n'
-  for i in msg.content.split('\n'):
-    string += i + '<br>\n'
-  string = string[0:len(string)-5]
-  if msg.type == 'i':
-    string += '</div><div style="clear:both;"></div><div class="infoLeft">\n'
-  elif msg.type == 's':
-    string += '</div><div style="clear:both;"></div><div class="infoRight">\n'
-  string += str(msg.date)[6:8] + '-' + str(msg.date)[4:6] + '-' + str(msg.date)[0:4] + ' ' + str(msg.date)[8:10] + ':' + str(msg.date)[10:12] + ':' + str(msg.date)[12:14]
- # print msg.date, 'ooh!!'
-  if msg.type == 'i':
-    string += '\n</div>\n\n'
-  elif msg.type == 's':
-    string += ' (You)\n</div>\n\n'
-  return string
+    string = ''
+    if msg.type == 'i':
+        string = '<div class="divContainerDownLeft">\n'
+    elif msg.type == 's':
+        string = '<div class="divContainerDownRight">\n'
+    for i in msg.content.split('\n'):
+        string += i + '<br>\n'
+    string = string[0:len(string)-5]
+    if msg.type == 'i':
+        string += '</div><div style="clear:both;"></div><div class="infoLeft">\n'
+    elif msg.type == 's':
+        string += '</div><div style="clear:both;"></div><div class="infoRight">\n'
+    string += str(msg.date)[6:8] + '-' + str(msg.date)[4:6] + '-' + str(msg.date)[0:4] + ' ' + str(msg.date)[8:10] + ':' + str(msg.date)[10:12] + ':' + str(msg.date)[12:14]
+    # print msg.date, 'ooh!!'
+    if msg.type == 'i':
+        string += '\n</div>\n\n'
+    elif msg.type == 's':
+        string += ' (You)\n</div>\n\n'
+    return string
 
 
 commands.getoutput('ls -1 to_process > meta/msgfiles')
@@ -251,11 +333,11 @@ if not exist('meta/contacts'):
 # Loading all contacts in memory (in cont)
 f = open('meta/contacts', 'r')
 for line in f:
-  contactparts = line.split('|')
-  if line != '\n':
-    if contactparts[0].isdigit():
-      cont[int(line.split('|')[0])] = line.split('|')[1][0:len(line.split('|')[1])-1]
-    else: cont[line.split('|')[0]] = line.split('|')[1][0:len(line.split('|')[1])-1]
+    contactparts = line.split('|')
+    if line != '\n':
+        if contactparts[0].isdigit():
+            cont[int(line.split('|')[0])] = line.split('|')[1][0:len(line.split('|')[1])-1]
+        else: cont[line.split('|')[0]] = line.split('|')[1][0:len(line.split('|')[1])-1]
 f.close()
 
 

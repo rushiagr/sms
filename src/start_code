@@ -4,86 +4,86 @@
 <style type="text/css">    
     .divContainerDownLeft
     {
-				position: relative;
-				max-width: 85%;
-				word-wrap:break-word;
-				font-size: 14px;
+        position: relative;
+        max-width: 85%;
+        word-wrap:break-word;
+        font-size: 14px;
         background-color: #a8d652;
         top: 1px;
-				float:left;
-				border-radius: 8px;
+        float:left;
+        border-radius: 8px;
         padding: 7px;
-				margin-right:15%;
-				font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
+        margin-right:15%;
+        font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
     }
     .divContainerDownRight
     {
-				word-wrap:break-word;
-				max-width: 85%;
-				text-align: left;
-				font-size: 14px;
+        word-wrap:break-word;
+        max-width: 85%;
+        text-align: left;
+        font-size: 14px;
         background-color: #9999ff;
         position: relative;
         top: 1px;
-				float:right;
-				border-radius: 8px;
-				margin-left:15%;
+        float:right;
+        border-radius: 8px;
+        margin-left:15%;
         padding: 7px;
-				font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
+        font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
     }
     .divContainerMain
     {
-				border-radius: 8px;
+        border-radius: 8px;
         background-color: #eaeaea;
         padding: 8px;
     }
-		.infoLeft
-		{
-				/*margin-left: 1%;*/
-				font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
-				font-size: 10px;
-				color: #666666;
-				margin-bottom: 8px;
-				margin-top: 2px;
-		}
-		.infoRight
-		{
-/*				margin-right: 2%;*/
-				font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
-				font-size: 10px;
-				color: #666666;
-				text-align:right;
-				margin-bottom: 8px;
-				margin-top: 2px;
-		}
-		.heading
-		{
-				font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
-				font-size: 20px;
-				color: #032222;
-				text-align: center;
-		}
-		.number
-		{
-				font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
-				font-size: 15px;
-				color: #234242;
-				text-align: center;
-		}
-		.subHeading
-		{
-				font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
-				font-size: 12px;
-				color: #436262;
-				text-align: center;
-		}
-		.copyright
-		{
-				font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
-				font-size: 14px;
-				text-align: right;
-				margin-top:10px;
-		}
+    .infoLeft
+    {
+        /*margin-left: 1%;*/
+        font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
+        font-size: 10px;
+        color: #666666;
+        margin-bottom: 8px;
+        margin-top: 2px;
+    }
+    .infoRight
+    {
+/*        margin-right: 2%;*/
+        font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
+        font-size: 10px;
+        color: #666666;
+        text-align:right;
+        margin-bottom: 8px;
+        margin-top: 2px;
+    }
+    .heading
+    {
+        font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
+        font-size: 20px;
+        color: #032222;
+        text-align: center;
+    }
+    .number
+    {
+        font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
+        font-size: 15px;
+        color: #234242;
+        text-align: center;
+    }
+    .subHeading
+    {
+        font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
+        font-size: 12px;
+        color: #436262;
+        text-align: center;
+    }
+    .copyright
+    {
+        font-family:"Lucida Sans Unicode", Verdana, Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        text-align: right;
+        margin-top:10px;
+    }
 </style>
 </head>
 <body>
